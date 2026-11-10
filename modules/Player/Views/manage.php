@@ -5,6 +5,17 @@
     <div class="card-body">
         <?php echo view("Modules\Team\Views\subnav.php"); ?>
 
+        <?php if ($saveError = session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger mt-3" role="alert">
+                <strong>บันทึกนักเตะไม่สำเร็จ</strong>
+                <div><?= esc($saveError) ?></div>
+            </div>
+        <?php elseif (session()->getFlashdata('duplicate_player')): ?>
+            <div class="alert alert-warning mt-3" role="alert">
+                มีนักเตะที่ใช้เลขประจำตัวหรือเลขพาสปอร์ตนี้ในระบบแล้ว กรุณาตรวจสอบเลขหรือเลือกเพิ่มนักเตะจากระบบ
+            </div>
+        <?php endif; ?>
+
         <form action="<?= base_url('player/save-player') ?>" method="POST" enctype="multipart/form-data" class="mt-4" autocomplete="off">
 
             <input type="hidden" name="id" value="<?= (!empty($player['id'])) ? $player['id'] : '' ?>">
@@ -46,12 +57,63 @@
 
             <!-- Section A: ข้อมูลส่วนตัว -->
             <div class="card shadow-sm border-0 rounded-4 mb-4">
-                <div class="card-header bg-white border-0 py-3 px-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 card-header bg-white border-0 py-3 px-4">
                     <h5 class="fw-bold mb-0 text-dark">
                         <span class="badge bg-primary me-2">A</span><?= lang('Common.personal_info') ?>
                     </h5>
+                    <?php if (empty($player['id'])): ?>
+                        <button type="button" class="btn btn-outline-primary rounded-pill px-3 align-self-start"
+                                data-bs-toggle="collapse" data-bs-target="#passportScan" aria-expanded="false" aria-controls="passportScan">
+                            <i class="fas fa-camera me-1"></i> สแกนพาสปอร์ต
+                        </button>
+                    <?php endif; ?>
+
                 </div>
                 <div class="card-body px-4 pb-4">
+                    <?php if (empty($player['id'])): ?>
+                        <div id="passportScan" class="collapse" data-scan-url="<?= esc(site_url('player/passport-scan'), 'attr') ?>">
+                            <div class="rounded-3 border p-3 mb-3">
+                                <p class="small mb-2">ถ่ายหรือเลือกรูปหน้าข้อมูลพาสปอร์ต ให้เห็น MRZ สองบรรทัดด้านล่างชัดเจน</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-outline-primary" data-open-camera>ถ่ายรูป</button>
+                                    <input type="file" accept="image/*" capture="environment" data-camera-file hidden>
+                                    <label class="btn btn-outline-primary position-relative">
+                                        เลือกรูป / ลองใหม่
+                                        <input type="file" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" accept="image/*" aria-label="เลือกรูปพาสปอร์ตหรือลองใหม่">
+                                    </label>
+                                    <button type="button" class="btn btn-outline-secondary" data-manual>กรอกเอง</button>
+                                </div>
+                                <div class="mt-3" data-passport-selection hidden>
+                                    <img class="d-block mx-auto img-fluid rounded-3 bg-light" style="max-height: 360px; object-fit: contain" alt="ภาพพาสปอร์ตที่เลือก">
+                                    <p class="small text-muted mt-2 mb-2" data-passport-filename></p>
+                                    <button type="button" class="btn btn-primary" data-scan-selected>สแกนพาสปอร์ต</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-reset-selected>ล้างภาพ</button>
+                                </div>
+                                <div class="mt-3" data-camera-panel hidden>
+                                    <video class="d-block w-100 rounded-3 bg-dark" style="max-height: 420px" autoplay muted playsinline></video>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button type="button" class="btn btn-primary" data-take-photo disabled>ถ่ายภาพ</button>
+                                        <button type="button" class="btn btn-outline-secondary" data-close-camera>ปิดกล้อง</button>
+                                    </div>
+                                </div>
+                                <section class="mt-3 border rounded-3 p-3" data-passport-review hidden>
+                                    <h6>ตรวจทานข้อมูลพาสปอร์ต</h6>
+                                    <dl class="row mb-2" data-review-fields></dl>
+                                    <h6>MRZ และ Check Digit</h6>
+                                    <pre class="bg-light rounded p-2 overflow-auto" data-review-mrz></pre>
+                                    <ul class="list-group list-group-flush mb-3" data-review-checks></ul>
+                                    <button type="button" class="btn btn-primary" data-apply-passport>นำข้อมูลลงฟอร์ม</button>
+                                    <button type="button" class="btn btn-outline-primary" data-crop-passport hidden>ครอปรูปนักเตะจากพาสปอร์ต</button>
+                                    <figure class="mt-3 mb-0" id="passportPortraitPreview" hidden>
+                                        <figcaption class="small fw-semibold mb-2">รูปนักเตะที่จะบันทึก</figcaption>
+                                        <img class="rounded border" width="112" height="112" alt="รูปนักเตะที่ครอปแล้ว">
+                                    </figure>
+                                </section>
+                                <div class="small mt-2" role="status" aria-live="polite"></div>
+                            </div>
+                        </div>
+                        <script defer src="<?= base_url('public/js/passport-scan.js') . '?v=' . filemtime(FCPATH . 'public/js/passport-scan.js') ?>"></script>
+                    <?php endif; ?>
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="first_name" class="form-label fw-semibold text-muted small"><?= lang('Common.first_name') ?> <span class="text-danger">*</span></label>
@@ -79,7 +141,7 @@
                         </div>
                         <div class="col-md-4">
                             <label for="birth_date" class="form-label fw-semibold text-muted small"><?= lang('Common.birth_date_full') ?> <span class="text-danger">*</span></label>
-                            <input type="text" name="birth_date" id="birth_date" value="<?= (!empty($player['birth_date'])) ? date('d/m/Y', strtotime($player['birth_date'])) : '' ?>" class="form-control date-picker bg-light border-0" required>
+                            <input type="text" name="birth_date" id="birth_date" value="<?= esc(old('birth_date', !empty($player['birth_date']) ? date('d/m/Y', strtotime($player['birth_date'])) : '', false), 'attr') ?>" class="form-control date-picker bg-light border-0" required>
                         </div>
                         
                         <div class="col-md-12">
@@ -405,6 +467,7 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
+                    <p class="small text-muted" id="passportCropHint" hidden>เลื่อนและปรับกรอบให้เหลือเฉพาะรูปบุคคล แล้วกดครอปรูป</p>
                     <label for="uploadImage" class="form-label"><?= lang('Common.choose_image_file') ?></label>
                     <input type="file" id="uploadImage" class="form-control" accept="image/*" />
                 </div>
@@ -482,7 +545,8 @@
         reader.onload = function(ev) {
             document.getElementById('id_card_image_base64').value = ev.target.result;
             document.getElementById('idCardPreview').src = ev.target.result;
-            document.getElementById('idCardPreviewWrapper').style.display = '';
+            document.getElementById('idCardPreviewWrapper').style.removeProperty('display');
+            document.getElementById('idCardPlaceholder')?.setAttribute('hidden', '');
             document.getElementById('delete_id_card_image').value = '0';
 
             // Add delete button if not exists
@@ -493,7 +557,7 @@
                 btn.id = 'btnDeleteIdCard';
                 btn.innerHTML = '<i class="fas fa-trash me-1"></i>' + langDeleteIdCardImage;
                 btn.onclick = deleteIdCardImage;
-                document.getElementById('idCardFileInput').parentNode.querySelector('small').after(document.createElement('br'), btn);
+                document.getElementById('idCardFileInput').after(btn);
             }
         };
         reader.readAsDataURL(file);
@@ -527,7 +591,8 @@
                 document.getElementById('delete_id_card_image').value = '1';
                 document.getElementById('id_card_image_base64').value = '';
                 document.getElementById('idCardPreview').src = '';
-                document.getElementById('idCardPreviewWrapper').style.display = 'none';
+                document.getElementById('idCardPreviewWrapper').style.setProperty('display', 'none', 'important');
+                document.getElementById('idCardPlaceholder')?.removeAttribute('hidden');
                 document.getElementById('idCardFileInput').value = '';
             }
         });
@@ -598,6 +663,7 @@
     // ฟัง keyup ด้วย เพราะ mask plugin เซ็ตค่าผ่าน .val() (ไม่ fire input ตอนพิมพ์ทีละตัว)
     let __lastCheckedIdCard = '';
     function checkIdCardDuplicate(rawVal) {
+        if (document.getElementById('id_card').dataset.passport === 'true' || !/^[0-9-]+$/.test(rawVal || '')) return;
         const digits = (rawVal || '').replace(/\D/g, '');
         if (digits.length !== 13) {
             __lastCheckedIdCard = ''; // ยังไม่ครบ 13 หลัก → reset ให้เช็คใหม่ได้เมื่อพิมพ์ครบอีกครั้ง
@@ -719,7 +785,9 @@
 
     function checkMaskIDCard() {
         let value = $('#nation').val();
-        if (value == 'THAI') {
+        const idCard = document.getElementById('id_card');
+        const existingPassport = idCard.value && !/^[0-9-]{13,17}$/.test(idCard.value);
+        if (value == 'THAI' && idCard.dataset.passport !== 'true' && !existingPassport) {
             $('#id_card').mask('0-0000-00000-00-0');
         } else {
             $('#id_card').unmask();
@@ -757,44 +825,12 @@
         }
     }
 
-    /**
-     * Toggles the address fields based on the selected nation.
-     * If nation is 'OTHER', disables address fields.
-     * If nation is 'THAI', enables them.
-     * Note: Address fields are not required (optional).
-     */
-    function toggleAddressFields() {
-        const nation = $('#nation').val();
-        const provinceSelect = $('#province');
-        const amphureSelect = $('#amphure');
-        const tambonSelect = $('#tambon');
-        const addressFields = [provinceSelect, amphureSelect, tambonSelect];
-        const fieldset = provinceSelect.closest('fieldset');
-
-        if (nation === 'OTHER') {
-            // Disable and clear value
-            addressFields.forEach(field => {
-                field.prop('disabled', true).val('');
-            });
-            // Reset dependent dropdowns to their initial state
-            amphureSelect.html('<option value="">' + langSelectDistrict + '</option>');
-            tambonSelect.html('<option value="">' + langSelectSubdistrict + '</option>');
-            fieldset.css('opacity', '0.65');
-        } else { // nation === 'THAI'
-            // Enable province (amphure/tambon will be enabled later by their own logic)
-            provinceSelect.prop('disabled', false);
-            fieldset.css('opacity', '1');
-        }
-    }
-
-
     // --- Main Logic on Document Ready ---
     $(document).ready(function () {
         // --- Event Handlers ---
         $('#nation').on('change', function () {
             checkMaskIDCard();
             $('#id_card').val('');
-            toggleAddressFields();
         });
 
         $('#height, #weight').on('input', calculateBMI);
@@ -869,10 +905,9 @@
         checkMaskIDCard();
         calculateBMI();
         checkShirtNumberRequired($("#player_sub_position_id").val());
-        toggleAddressFields(); // Set initial state for address fields
 
         // If a province is pre-selected (on edit form), trigger change to load amphures
-        if ($('#province').val() && $('#nation').val() === 'THAI') {
+        if ($('#province').val()) {
             $('#province').trigger('change');
         }
 
@@ -880,28 +915,55 @@
         const uploadImage = document.getElementById("uploadImage");
         const cropImage = document.getElementById("cropImage");
         const cropButton = document.getElementById("cropButton");
-        const preview = document.getElementById("preview");
+        const cropperModal = document.getElementById("cropperModal");
+        const passportCropHint = document.getElementById("passportCropHint");
         let cropper;
+        let sourceVersion = 0;
 
-        uploadImage.addEventListener("change", (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
+        function resetCropSource() {
+            sourceVersion++;
+            if (cropper) cropper.destroy();
+            cropper = null;
+            cropButton.disabled = true;
+            cropImage.removeAttribute("src");
+            cropImage.style.display = "none";
+            passportCropHint.hidden = true;
+        }
 
+        function loadCropSource(file, fromPassport = false) {
+            resetCropSource();
+            const version = sourceVersion;
+            passportCropHint.hidden = !fromPassport;
             const reader = new FileReader();
-            reader.onload = (e) => {
-                cropImage.src = e.target.result;
+            reader.onload = () => {
+                if (version !== sourceVersion) return;
+                cropImage.src = reader.result;
                 cropImage.style.display = "block";
-                if (cropper) {
-                    cropper.destroy();
-                }
                 cropper = new Cropper(cropImage, {
                     aspectRatio: 1,
                     viewMode: 1,
-                    autoCropArea: 1,
+                    autoCropArea: fromPassport ? 0.25 : 1,
                     preview: "#preview",
+                    ready() {
+                        if (version === sourceVersion) cropButton.disabled = false;
+                    },
                 });
             };
             reader.readAsDataURL(file);
+        }
+
+        uploadImage.addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            if (file) loadCropSource(file);
+        });
+        cropperModal.addEventListener("passport-portrait", (event) => {
+            uploadImage.value = "";
+            loadCropSource(event.detail, true);
+            bootstrap.Modal.getOrCreateInstance(cropperModal).show();
+        });
+        cropperModal.addEventListener("hidden.bs.modal", () => {
+            resetCropSource();
+            uploadImage.value = "";
         });
 
         cropButton.addEventListener("click", () => {
@@ -911,6 +973,7 @@
                 width: 350,
                 height: 350,
             });
+            if (!canvas || !canvas.width || !canvas.height) return;
             const croppedImageURL = canvas.toDataURL("image/png");
             $('#image_personel').val(croppedImageURL);
             $('#personel_image_display').attr('src', croppedImageURL).css({
@@ -919,6 +982,12 @@
                 'object-fit': 'cover',
                 'border': '4px solid #dee2e6'
             });
+
+            const portraitPreview = document.getElementById("passportPortraitPreview");
+            if (portraitPreview) {
+                portraitPreview.querySelector("img").src = croppedImageURL;
+                portraitPreview.hidden = false;
+            }
 
             const modal = bootstrap.Modal.getInstance(document.getElementById("cropperModal"));
             modal.hide();
