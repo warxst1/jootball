@@ -97,7 +97,7 @@
                                     </div>
                                 </div>
                                 <dialog class="border rounded-4 shadow p-0" data-passport-review aria-labelledby="passportReviewTitle"
-                                        style="width: min(760px, calc(100% - 24px)); max-height: 90dvh; color: #12345a">
+                                        style="position: fixed; inset: 0; margin: auto; width: min(760px, calc(100% - 24px)); max-height: 90dvh; overflow-y: auto; color: #12345a">
                                     <div class="p-3 p-md-4">
                                     <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
                                         <h5 class="mb-0 fw-bold" id="passportReviewTitle">ตรวจทานข้อมูลพาสปอร์ต</h5>
