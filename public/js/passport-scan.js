@@ -51,12 +51,19 @@
     const reviewChecks = root.querySelector('[data-review-checks]');
     const applyButton = root.querySelector('[data-apply-passport]');
     const cropButton = root.querySelector('[data-crop-passport]');
+    root.querySelector('[data-close-review]').addEventListener('click', () => reviewPanel.close());
+    reviewPanel.addEventListener('click', event => {
+        if (event.target !== reviewPanel) return;
+        const bounds = reviewPanel.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right
+            || event.clientY < bounds.top || event.clientY > bounds.bottom) reviewPanel.close();
+    });
     let pendingValues = null;
     let selectedFile = null;
 
     function clearReview() {
         pendingValues = null;
-        reviewPanel.hidden = true;
+        if (reviewPanel.open) reviewPanel.close();
         cropButton.hidden = true;
         reviewFields.replaceChildren();
         reviewMrz.textContent = '';
@@ -65,7 +72,7 @@
 
     function showReview(result) {
         if (!result.mrz) return;
-        reviewPanel.hidden = false;
+        if (!reviewPanel.open) reviewPanel.showModal();
         reviewMrz.textContent = result.mrz.join('\n');
         for (const check of result.checks) {
             const item = document.createElement('li');
@@ -102,6 +109,7 @@
 
     cropButton.addEventListener('click', () => {
         if (!pendingValues || !selectedFile) return;
+        reviewPanel.close();
         document.getElementById('cropperModal').dispatchEvent(
             new CustomEvent('passport-portrait', { detail: selectedFile }),
         );
@@ -109,6 +117,7 @@
 
     applyButton.addEventListener('click', () => {
         if (!pendingValues || !apply(pendingValues)) return;
+        reviewPanel.close();
         const input = document.getElementById('idCardFileInput');
         const transfer = new DataTransfer();
         transfer.items.add(selectedFile);

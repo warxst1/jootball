@@ -386,6 +386,7 @@ $routes->group('player', ['namespace' => '\Modules\Player\Controllers', 'filter'
     $routes->get('manage/(:any)', 'Player::manage/$1');
     $routes->get('manage_team/(:num)', 'Player::manage_by_team/$1');
     $routes->post('get-players', 'Player::ajax_players');
+    $routes->post('passport-scan', 'PassportScan::scan');
     $routes->post('save-player', 'Player::save_player');
     $routes->get('check-id-card', 'Player::check_id_card');
     $routes->post('delete', 'Player::delete_player');

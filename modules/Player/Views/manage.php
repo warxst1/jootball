@@ -96,11 +96,16 @@
                                         <button type="button" class="btn btn-outline-secondary" data-close-camera>ปิดกล้อง</button>
                                     </div>
                                 </div>
-                                <section class="mt-3 border rounded-3 p-3" data-passport-review hidden>
-                                    <h6>ตรวจทานข้อมูลพาสปอร์ต</h6>
+                                <dialog class="border rounded-4 shadow p-0" data-passport-review aria-labelledby="passportReviewTitle"
+                                        style="width: min(760px, calc(100% - 24px)); max-height: 90dvh; color: #12345a">
+                                    <div class="p-3 p-md-4">
+                                    <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                        <h5 class="mb-0 fw-bold" id="passportReviewTitle">ตรวจทานข้อมูลพาสปอร์ต</h5>
+                                        <button type="button" class="btn-close" data-close-review aria-label="ปิดหน้าต่าง"></button>
+                                    </div>
                                     <dl class="row mb-2" data-review-fields></dl>
                                     <h6>MRZ และ Check Digit</h6>
-                                    <pre class="bg-light rounded p-2 overflow-auto" data-review-mrz></pre>
+                                    <pre class="bg-light rounded p-2" style="white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8rem" data-review-mrz></pre>
                                     <ul class="list-group list-group-flush mb-3" data-review-checks></ul>
                                     <button type="button" class="btn btn-primary" data-apply-passport>นำข้อมูลลงฟอร์ม</button>
                                     <button type="button" class="btn btn-outline-primary" data-crop-passport hidden>ครอปรูปนักเตะจากพาสปอร์ต</button>
@@ -108,7 +113,7 @@
                                         <figcaption class="small fw-semibold mb-2">รูปนักเตะที่จะบันทึก</figcaption>
                                         <img class="rounded border" width="112" height="112" alt="รูปนักเตะที่ครอปแล้ว">
                                     </figure>
-                                </section>
+                                </div></dialog>
                                 <div class="small mt-2" role="status" aria-live="polite"></div>
                             </div>
                         </div>
