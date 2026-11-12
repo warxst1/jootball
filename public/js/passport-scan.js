@@ -132,6 +132,9 @@
         closeCamera();
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         clearReview();
+        if (file && !(file instanceof File)) {
+            file = new File([file], 'passport-camera.jpg', { type: file.type || 'image/jpeg' });
+        }
         selectedFile = file;
         previewUrl = file ? URL.createObjectURL(file) : '';
         selection.hidden = !file;
